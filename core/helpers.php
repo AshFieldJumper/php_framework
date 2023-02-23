@@ -1,9 +1,13 @@
 <?php
+
+use core\Application;
+
 if (!function_exists('view')){
-    function view($view, $data = null){
+    function view($view, $params = null){
 
         $view = str_replace('.', '/', $view);
 
-        return require 'views/'. $view;
+        return Application::$app->route->renderView($view, $params);
+
     }
 }

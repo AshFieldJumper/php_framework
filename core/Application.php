@@ -2,55 +2,34 @@
 
 namespace core;
 
+
+use controllers\Controller;
+use Exception;
+
 class Application
 {
-    protected static $router;
+    public static Application $app;
 
-    public static $db;
+    public function __construct(
+        public Route $route,
+        public DB $db,
+        public Session $session,
+        public Controller $controller
 
-    public static function getRouter()
-    {
-        return self::$router;
+    ){
+        self::$app = $this;
     }
-    public static function run($uri)
+    public function run()
     {
-        self::$router = new Route($uri);
-
-        self::$db  =  new DB(Config::get('db.host'),Config::get('db.user') , Config::get('db.password'),Config::get('db.db_name'));
-
-
-        $controller_class = ucfirst(self::$router->getController()).'Controller';
-
-        $controller_method = strtolower(self::$router->getMethodPrefix().self::$router->getAction());
-
-        $layout = self::$router->getRoute();
-        if($layout == 'admin' && Session::get('role') != 'admin')
-        {
-            if($controller_method != 'admin_login')
-            {
-                Route::redirect("/admin/users/login");
-            }
+        try {
+            echo $this->route->resolve();
+        } catch (Exception $e) {
+            $code = $e->getCode();
+            $this->route->response->setStatusCode($code);
+            echo $this->controller->render("errors/_$code", [
+                'code' => $code,
+                'message' => $e->getMessage(),
+            ]);
         }
-
-        //calling controller's method
-
-        $controller_object =  new $controller_class();
-
-        if(method_exists($controller_object, $controller_method))
-        {
-            $view_path =  $controller_object->$controller_method();
-
-            $view_object = new View($controller_object->getData(), $view_path);
-            $content = $view_object->render();
-
-        }else
-        {
-            throw new Exception("Method ". $controller_method. " of class" . $controller_class . "does not exists");
-
-        }
-
-        $layout_path = VIEWS_PATH.DS.$layout.'.html';
-        $layout_view_object = new View(compact('content'), $layout_path);
-        echo $layout_view_object->render();
     }
 }

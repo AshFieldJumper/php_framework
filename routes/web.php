@@ -1,3 +1,6 @@
 <?php
 
-\core\Route::get('home', [\controllers\HomeController::class, 'index']);
+
+use core\Route;
+
+Route::get('home', [\controllers\HomeController::class, 'index']);

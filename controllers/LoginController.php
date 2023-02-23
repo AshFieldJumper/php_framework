@@ -5,7 +5,7 @@ namespace controllers;
 use core\Request;
 use models\User;
 
-class LoginController
+class LoginController extends Controller
 {
     public function index()
     {

@@ -58,4 +58,17 @@ class Route
     {
         self::$routes['delete'][$path] = $action;
     }
+
+    public function renderView($view, $params = [])
+    {
+        $layoutContent = $this->layoutContent();
+        $viewContent = $this->renderOnlyView($view, $params);
+        return str_replace('{{content}}', $viewContent, $layoutContent);
+    }
+
+    private function layoutContent($viewContent = null)
+    {
+        $layoutContent = $this->layoutContent();
+        return str_replace('{{content}}', $viewContent, $layoutContent);
+    }
 }
