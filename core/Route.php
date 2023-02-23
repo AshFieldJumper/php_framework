@@ -4,15 +4,34 @@ namespace core;
 
 class Route
 {
-    protected static $routes;
 
     public Request $request;
-    /**
-     * @param $uri
-     */
-    public function __construct($uri)
-    {
+    public Response $response;
+    protected static array $routes = [];
 
+    /**
+     * @param Request $request
+     */
+    public function __construct(Request $request, Response $response)
+    {
+        $this->request = $request;
+        $this->response = $response;
+    }
+
+    /**
+     * @throws \HttpRequestException
+     */
+    public function resolve(): void
+    {
+        $method = $this->request->getMethod();
+        $path = $this->request->getPath();
+        if (!isset(self::$routes[$method][$path]))
+            throw new \HttpRequestException('Route not found');
+
+        $obj = self::$routes[$method][$path];
+
+        $class = new $obj[0];
+        call_user_func($class, $obj[1]);
     }
 
     public static function get($path, $action): void

@@ -18,28 +18,30 @@ class QueryBuilder extends DB
     /**
      * @var array<string>
      */
-    private $from = [];
+    private array $from = [];
 
     public function __toString(): string
     {
+        $select = "SELECT " . ($this->fields === [] ? '*' : implode(', ', $this->fields));
+        $from = ' FROM ' . implode(', ', $this->from);
         $where = $this->conditions === [] ? '' : ' WHERE ' . implode(' AND ', $this->conditions);
-        return 'SELECT ' . implode(', ', $this->fields)
-            . ' FROM ' . implode(', ', $this->from)
+
+        return $select
+            . $from
             . $where;
     }
 
-    public function select(string ...$select): self
+    public function select(mixed ...$select): self
     {
         $this->fields = $select;
+
         return $this;
     }
 
-    public function where(array ...$where): self
+    public function where($column, $operator, $value): self
     {
-        foreach ($where as $statement) {
-            $this->conditions[] = $statement[0];
-            $this->values[] = $statement[1];
-        }
+        $this->conditions[] = $column . " " . $operator . " " . $value;
+
         return $this;
     }
 

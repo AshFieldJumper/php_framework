@@ -4,35 +4,38 @@ namespace core;
 
 class DB
 {
+    private \PDO $pdo;
+
+    private string $query = "";
+
     public function __construct()
     {
-        parent::__construct();
-        $this->pdo = new \PDO($this->getDsn(), $this->getUser(), $this->getPassword());
+        $dsn = "mysql:host=" . getenv('DB_HOST') . ";dbname=" . getenv('DB_NAME') . ";port=" . getenv('DB_PORT') . ";";
+        $this->pdo = new \PDO($dsn, getenv('DB_USER'), getenv('DB_PASSWORD'));
         $this->pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
     }
 
-    public function query(): QueryBuilder
+    public function query()
     {
-        $qb = new QueryBuilder();
-        if (get_class($this) instanceof Model){
-            $qb->from(get_class($this));
+        $sql = new QueryBuilder();
+        if (get_class($this) instanceof Model) {
+            $sql->from(get_class($this));
         }
-        return $qb;
+        $this->query = $sql;
     }
-    public function prepare()
-    {
-        $pdoStatement = $pdo->prepare($query);
-        $pdoStatement->execute();
 
-        $users = $pdoStatement->fetchAll(\PDO::FETCH_ASSOC);
-    }
 
     public function get()
     {
-        $pdoStatement = $pdo->prepare($query);
-        $pdoStatement->execute(
-        );
+        $pdoStatement = $this->pdo->prepare($this->query);
+        $pdoStatement->execute();
 
         return $pdoStatement->fetch(\PDO::FETCH_ASSOC);
+    }
+
+    public function first()
+    {
+        return $this->get()[0];
+
     }
 }
